@@ -47,14 +47,16 @@
     class Signin extends React.Component {
       constructor(props) {
         super(props);
-        this.state = { input: "", time: "", list1: [], count: 0, deadline: "" };
+        this.state = { input: "", deletedlist: [], time: "", list1: [], count: 0, deadline: "" };
       }
 
       componentDidMount() {
         var count = localStorage.getItem("count");
         const L = localStorage.getItem("list");
-        if (L != null) {
-          const list = JSON.parse(L);
+        var delet = localStorage.getItem("deletedlist");
+        var deleted = JSON.parse(delet);
+        const list = JSON.parse(L);
+        if (L != null && list.length > 0) {
           list.map((a, index) => {
             var present = new Date();
             var month = present.getMonth() + 1;
@@ -84,11 +86,24 @@
             }
           });
 
-          this.setState({ count: parseInt(count), list1: [...list] });
+        }
+        else if (L == null || list.length == 0) {
+
+          fetch("https://raw.githubusercontent.com/Sireesha78/questions/master/tod.json")
+            .then(response => response.json())
+            .then(data => {
+              this.setState({ list1: [...data], count: data.length });
+            });
+        }
+
+
+        if (count != null) {
+          this.setState({ count: parseInt(count), list1: [...list], deletedlist: [...deleted] });
         }
         window.addEventListener("beforeunload", () => {
           localStorage.setItem("count", this.state.count);
           localStorage.setItem("list", JSON.stringify(this.state.list1));
+          localStorage.setItem("deletedlist", JSON.stringify(this.state.deletedlist));
         });
       }
 
@@ -133,9 +148,11 @@
             <br />
             <br />
 
-                &emsp;<button onClick={this.handleClick} class="btn btn-success">Add Task</button><br /><br />
+                &emsp;<button onClick={this.handleClick} class="btn btn-success">Add Task</button>
+                &emsp;<button onClick={this.recyc} class="btn btn-success">BIN</button><br /><br />
+
                 &emsp;<h4>Total: {this.state.count}</h4><br />
-                <table class="table table-hover table-bordered border border-4">
+            <table class="table table-hover table-bordered border border-4">
               <thead>
                 <tr>
                   <th colspan="1">S.NO.</th>
@@ -169,6 +186,14 @@
                         Delete
                                   </button>
                     </td>
+                    <td>
+                      <button class="btn btn-danger"
+                        onClick={this.recyclebin}
+                        value={index}
+                      >
+                        BIN
+                                  </button>
+                    </td>
 
                   </tr>
                 ))}
@@ -180,6 +205,9 @@
 
         );
       }
+      recyc = () => {
+        ReactDOM.render(<Recycle />, document.getElementById("#app"));
+      };
 
       Modify = (event) => {
         localStorage.setItem("list", JSON.stringify(this.state.list1));
@@ -216,6 +244,23 @@
         console.log(list);
         this.setState({ list1: [...list], count: this.state.count - 1 });
         console.log(event.target.value);
+      };
+      recyclebin = (event) => {
+
+        const list = [...this.state.list1];
+        var x = list[event.target.value];
+        list.splice(Number(event.target.value), 1);
+        // console.log(list);
+        this.setState({ list1: [...list], count: this.state.count - 1, deletedlist: [...this.state.deletedlist, x] }, this.bin);
+        // console.log(event.target.value);
+
+      };
+
+      bin = (event) => {
+        localStorage.setItem("list", JSON.stringify(this.state.list1));
+        localStorage.setItem("deletedlist", JSON.stringify(this.state.deletedlist));
+        localStorage.setItem("count", this.state.count);
+        ReactDOM.render(<Recycle />, document.getElementById("#app"));
       };
     }
 
@@ -261,7 +306,7 @@
               type="text"
               value={this.state.newtask}
             />
-           <br /><br />
+            <br /><br />
             <label>
               <h4> Date:  </h4>
             </label>
@@ -291,12 +336,23 @@
 
             >
               Submit
-            </button><br/><br/>
+            </button><br /><br />
+            <button class="btn btn-primary"
+              onClick={this.homepage}
+
+            >
+              Home page
+            </button><br /><br />
 
           </div>
 
         );
+        
       }
+      homepage = () => {
+        localStorage.setItem("list", JSON.stringify(this.state.li));
+        ReactDOM.render(<Signin />, document.getElementById("#app"));
+      };
 
       readName = (event) => {
         this.setState({ newtask: event.target.value });
@@ -324,6 +380,99 @@
 
 
       };
+    }
+    class Recycle extends React.Component {
+      constructor() {
+        super();
+        this.state = {
+          deleted: [],
+          temp: [],
+          cnt: 0
+        };
+      }
+
+      componentDidMount() {
+        const newlist = localStorage.getItem("deletedlist");
+        const final = localStorage.getItem("list");
+        const count1 = localStorage.getItem("count");
+        const final2 = JSON.parse(final);
+        const list1 = JSON.parse(newlist);
+
+        this.setState({ deleted: [...list1], temp: [...final2], cnt: Number(count1) });
+
+        window.addEventListener("beforeunload", () => {
+
+          localStorage.setItem("count", this.state.cnt);
+          localStorage.setItem("list", JSON.stringify(this.state.temp));
+          localStorage.setItem("deletedlist", JSON.stringify(this.state.deleted));
+
+        });
+      }
+
+      render() {
+        return (
+          <div class="container">
+            <div class="row">
+              <div class="col-md-2"></div>
+              <div class="col-md-8 mt-3">
+                <center>
+                  <h1>TASKS DELETED</h1>
+                  <div>
+                    <table class="table table-bordered mt-5 table-hover">
+                      <thead class="thead-dark">
+                        <tr>
+                          <th colSpan="5" ><center>DETAILS OF TASKS PENDING</center></th>
+                        </tr>
+                        <tr>
+                          <th><center>TASK</center></th>
+                          <th><center>SUBMISSION DATE</center></th>
+                          <th><center>DEADLINE</center></th>
+                          <th colSpan="3"><center>OPERATIONS</center></th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {this.state.deleted.map((ele, index) =>
+                          <tr key={index}>
+                            <td>{ele.task}</td>
+                            <td>{ele.date}</td>
+                            <td>{ele.time}</td>
+                            <td><center><button type="submit" class="btn btn-warning" onClick={this.deletetask} value={index} >Remove Task</button></center></td>
+                            <td><center><button type="submit" class="btn btn-warning" onClick={this.restoretask} value={index} >Restore Task</button></center></td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div><button type="submit" class="btn btn-warning mt-1" onClick={this.homepage}>Home Page</button></div>
+                </center>
+              </div>
+              <div class="col-md-2"></div>
+            </div>
+          </div>
+        );
+      }
+
+      homepage = () => {
+        localStorage.setItem("count", this.state.cnt);
+        localStorage.setItem("list", JSON.stringify(this.state.temp));
+        localStorage.setItem("deletedlist", JSON.stringify(this.state.deleted));
+        ReactDOM.render(<Signin />, document.getElementById("#app"));
+      };
+
+      deletetask = (event) => {
+        const list = [...this.state.deleted];
+        list.splice(Number(event.target.value), 1);
+        this.setState({ deleted: [...list] })
+      };
+
+      restoretask = (event) => {
+        const list = [...this.state.deleted];
+        var x = list[event.target.value]
+        list.splice(Number(event.target.value), 1);
+        this.setState({ deleted: [...list], cnt: this.state.cnt + 1, temp: [...this.state.temp, x] });
+      }
+
     }
   </script>
 
