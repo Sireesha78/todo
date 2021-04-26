@@ -149,7 +149,7 @@
             <br />
 
                 &emsp;<button onClick={this.handleClick} class="btn btn-success">Add Task</button>
-                &emsp;<button onClick={this.recyc} class="btn btn-success">BIN</button><br /><br />
+                &emsp;<button onClick={this.recyc} class="btn btn-danger">BIN</button><br /><br />
 
                 &emsp;<h4>Total: {this.state.count}</h4><br />
             <table class="table table-hover table-bordered border border-4">
@@ -211,7 +211,7 @@
 
       Modify = (event) => {
         localStorage.setItem("list", JSON.stringify(this.state.list1));
-        ReactDOM.render(<Update numb={event.target.value} />, document.getElementById("#app"));
+        ReactDOM.render(<Bin numb={event.target.value} />, document.getElementById("#app"));
       }
 
       readName = (event) => {
@@ -265,7 +265,7 @@
     }
 
     ReactDOM.render(<Signin />, document.getElementById("#app"));
-    class Update extends React.Component {
+    class Bin extends React.Component {
 
       constructor() {
         super();
@@ -296,6 +296,12 @@
       render() {
         return (
           <div ><br />
+            &emsp;<button class="btn btn-primary"
+              onClick={this.homepage}
+
+            >
+              Home page
+            </button><br /><br />
             <label>
               <h4> Name of the Task:  </h4>
             </label>
@@ -337,12 +343,7 @@
             >
               Submit
             </button><br /><br />
-            <button class="btn btn-primary"
-              onClick={this.homepage}
-
-            >
-              Home page
-            </button><br /><br />
+            
 
           </div>
 
@@ -368,15 +369,15 @@
 
 
       sub = () => {
-        const old = [...this.state.li];
-        old.map((a, index) => {
+        const bef = [...this.state.li];
+        bef.map((a, index) => {
           if (index == Number(this.props.numb)) {
             a.task = this.state.newtask;
             a.date = this.state.newdate;
             a.time = this.state.newtime;
           }
         });
-        this.setState({ li: [...old] });
+        this.setState({ li: [...bef] });
 
 
       };
@@ -412,22 +413,22 @@
       render() {
         return (
           <div class="container">
+           <br /><div><button type="submit" class="btn btn-primary mt-1" onClick={this.homepage}>Home Page</button></div>
             <div class="row">
               <div class="col-md-2"></div>
               <div class="col-md-8 mt-3">
+                
                 <center>
                   <h1>TASKS DELETED</h1>
                   <div>
                     <table class="table table-bordered mt-5 table-hover">
                       <thead class="thead-dark">
+                        
                         <tr>
-                          <th colSpan="5" ><center>DETAILS OF TASKS PENDING</center></th>
-                        </tr>
-                        <tr>
-                          <th><center>TASK</center></th>
-                          <th><center>SUBMISSION DATE</center></th>
-                          <th><center>DEADLINE</center></th>
-                          <th colSpan="3"><center>OPERATIONS</center></th>
+                          <th><center>Name</center></th>
+                          <th><center>Date</center></th>
+                          <th><center>Time</center></th>
+                          
                         </tr>
                       </thead>
 
@@ -437,14 +438,13 @@
                             <td>{ele.task}</td>
                             <td>{ele.date}</td>
                             <td>{ele.time}</td>
-                            <td><center><button type="submit" class="btn btn-warning" onClick={this.deletetask} value={index} >Remove Task</button></center></td>
-                            <td><center><button type="submit" class="btn btn-warning" onClick={this.restoretask} value={index} >Restore Task</button></center></td>
+                            <td><center><button type="submit" class="btn btn-danger" onClick={this.deletetask} value={index} >Remove</button></center></td>
+                            <td><center><button type="submit" class="btn btn-success" onClick={this.restoretask} value={index} >Restore</button></center></td>
                           </tr>
                         )}
                       </tbody>
                     </table>
                   </div>
-                  <div><button type="submit" class="btn btn-warning mt-1" onClick={this.homepage}>Home Page</button></div>
                 </center>
               </div>
               <div class="col-md-2"></div>
